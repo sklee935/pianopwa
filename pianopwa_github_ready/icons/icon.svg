@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6d5dfc"/>
+      <stop offset="1" stop-color="#ffbd59"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#g)"/>
+  <rect x="86" y="170" width="340" height="174" rx="34" fill="#fff" opacity=".96"/>
+  <rect x="120" y="170" width="46" height="112" rx="0" fill="#2f2741"/>
+  <rect x="210" y="170" width="46" height="112" rx="0" fill="#2f2741"/>
+  <rect x="306" y="170" width="46" height="112" rx="0" fill="#2f2741"/>
+  <path d="M115 344V205M164 344V205M213 344V205M262 344V205M311 344V205M360 344V205M409 344V205" stroke="#d8d1eb" stroke-width="6"/>
+  <circle cx="376" cy="124" r="42" fill="#fff7d4"/>
+  <path d="M364 124l9 9 20-24" fill="none" stroke="#35b779" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="900" fill="#fff">도레미</text>
+</svg>
