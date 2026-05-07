@@ -502,6 +502,10 @@ input:focus {
   height: clamp(190px, 24vw, 270px);
   padding: 0 4px 4px;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 .white-layer, .black-layer {
@@ -512,6 +516,17 @@ input:focus {
 .white-layer {
   display: flex;
   gap: 4px;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/*
+  The black-key layer sits above the white-key layer.
+  Its transparent area must not block taps on white keys.
+*/
+.black-layer {
+  z-index: 2;
+  pointer-events: none;
 }
 
 .piano-key {
@@ -524,6 +539,10 @@ input:focus {
   padding-bottom: 16px;
   border-radius: 0 0 18px 18px;
   font-weight: 1000;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .piano-key.white {
@@ -546,6 +565,7 @@ input:focus {
   background: linear-gradient(180deg, #2d263c 0%, #0f0c18 100%);
   border-radius: 0 0 14px 14px;
   box-shadow: 0 12px 18px rgba(35, 26, 56, 0.28);
+  pointer-events: auto;
 }
 
 .piano-key.target {
@@ -709,11 +729,15 @@ input:focus {
     grid-template-columns: 1fr;
   }
   .keyboard {
-    height: 220px;
+    height: 240px;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
   }
   .white-layer, .black-layer {
     min-width: 920px;
+  }
+  .piano-key {
+    padding-bottom: 20px;
   }
   .tutor-box {
     grid-template-columns: 1fr;

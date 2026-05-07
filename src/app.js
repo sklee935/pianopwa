@@ -37,6 +37,7 @@
   let toastTimer = null;
   let deferredInstallPrompt = null;
   let midiAccess = null;
+  let lastPointerKeyAt = 0;
 
   document.addEventListener('DOMContentLoaded', init);
   window.addEventListener('online', () => updateNetworkStatus(true));
@@ -49,6 +50,7 @@
 
   function init() {
     render();
+    document.addEventListener('pointerdown', handlePointerDown, { passive: false });
     document.addEventListener('click', handleClick);
     document.addEventListener('change', handleChange);
     document.addEventListener('keydown', handleKeyboardShortcut);
@@ -423,12 +425,30 @@
     `;
   }
 
+  function handlePointerDown(event) {
+    const keyButton = event.target.closest('.piano-key[data-action="key"]');
+    if (!keyButton) return;
+    event.preventDefault();
+    lastPointerKeyAt = Date.now();
+    if (keyButton.setPointerCapture && event.pointerId !== undefined) {
+      try {
+        keyButton.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // Some browsers do not allow pointer capture after a re-render. Tapping still works.
+      }
+    }
+    handleKeyPress(Number(keyButton.dataset.midi), 'screen');
+  }
+
   function handleClick(event) {
     const button = event.target.closest('[data-action]');
     if (!button) return;
     const action = button.dataset.action;
     if (action === 'select-lesson') return selectLesson(button.dataset.lessonId);
-    if (action === 'key') return handleKeyPress(Number(button.dataset.midi), 'screen');
+    if (action === 'key') {
+      if (Date.now() - lastPointerKeyAt < 700) return;
+      return handleKeyPress(Number(button.dataset.midi), 'screen');
+    }
     if (action === 'hint') return showHint();
     if (action === 'explain') return showExplanation();
     if (action === 'next-mission') return nextMission();
