@@ -1,12 +1,12 @@
-const CACHE_NAME = 'pianopwa-free-v1.0.1';
+const CACHE_NAME = 'pianopwa-free-v1.0.4-white-key-real-fix';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css',
+  './style.css?v=white-key-real-fix-4',
   './manifest.webmanifest',
-  './src/logic.js',
-  './src/content.js',
-  './src/app.js',
+  './src/logic.js?v=white-key-real-fix-4',
+  './src/content.js?v=white-key-real-fix-4',
+  './src/app.js?v=white-key-real-fix-4',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png'
@@ -15,7 +15,7 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => Promise.all(APP_SHELL.map(url => cache.add(new Request(url, { cache: 'reload' })))))
       .then(() => self.skipWaiting())
   );
 });
@@ -31,21 +31,25 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
+  const requestUrl = new URL(event.request.url);
+  const sameOrigin = requestUrl.origin === self.location.origin;
+
+  if (!sameOrigin) {
+    event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-          return cached;
-        });
-    })
+    fetch(event.request)
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        if (event.request.mode === 'navigate') return caches.match('./index.html');
+        return cached;
+      }))
   );
 });

@@ -16,19 +16,19 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=white-key-real-fix-4" />
 </head>
 <body>
   <noscript>이 앱은 JavaScript가 켜져 있어야 사용할 수 있어요.</noscript>
   <div id="app" class="app-shell"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="./src/logic.js"></script>
-  <script src="./src/content.js"></script>
-  <script src="./src/app.js"></script>
+  <script src="./src/logic.js?v=white-key-real-fix-4"></script>
+  <script src="./src/content.js?v=white-key-real-fix-4"></script>
+  <script src="./src/app.js?v=white-key-real-fix-4"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js').catch(function (error) {
+        navigator.serviceWorker.register('./sw.js?v=white-key-real-fix-4').catch(function (error) {
           console.warn('Service worker registration failed:', error);
         });
       });
