@@ -6,6 +6,7 @@
   const C = window.PianoPWAContent;
   const STORAGE_KEY = 'pianopwa-free-state-v1';
   const $ = (selector, root = document) => root.querySelector(selector);
+  const APP_VERSION = 'keyboard-fix-4';
 
   const defaultState = {
     profile: {
@@ -51,6 +52,8 @@
   function init() {
     render();
     document.addEventListener('pointerdown', handlePointerDown, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('click', handleClick);
     document.addEventListener('change', handleChange);
     document.addEventListener('keydown', handleKeyboardShortcut);
@@ -143,7 +146,7 @@
           <div class="brand-mark" aria-hidden="true">🎹</div>
           <div>
             <h1>피아노 탐험대</h1>
-            <p>무료 PWA · 홈 화면에 앱처럼 추가 가능</p>
+            <p>무료 PWA · 건반 수정 v4</p>
           </div>
         </div>
         <div class="top-stats" aria-label="학습 상태">
@@ -335,27 +338,32 @@
     const blacks = C.KEYBOARD.filter(key => key.isBlack);
     const whiteWidth = 100 / whites.length;
     const blackWidth = whiteWidth * 0.62;
-    const whiteKeys = whites.map(key => renderKey(key, 'white')).join('');
+
+    const whiteKeys = whites.map((key, index) => {
+      const left = index * whiteWidth;
+      return renderKey(key, 'white', `left:${left}%;width:calc(${whiteWidth}% - 4px);`);
+    }).join('');
+
     const blackKeys = blacks.map(key => {
       const previousWhites = whites.filter(white => white.midi < key.midi).length;
       const left = previousWhites * whiteWidth - blackWidth / 2;
-      return renderKey(key, 'black', `left:${left}%;--black-width:${blackWidth}%;`);
+      return renderKey(key, 'black', `left:${left}%;width:${blackWidth}%;`);
     }).join('');
+
     return `
       <section class="card keyboard-card">
         <div class="keyboard-head">
           <div>
             <h2>피아노 건반</h2>
-            <p>${escapeHtml(state.midiStatus)} · 컴퓨터 키보드 A/S/D로도 눌러볼 수 있어요.</p>
+            <p>${escapeHtml(state.midiStatus)} · 흰 건반/검은 건반 모두 좌표로 판정해요. (${APP_VERSION})</p>
           </div>
           <div class="button-row">
             <button class="secondary" data-action="connect-midi">🎛️ MIDI</button>
             <button class="secondary" data-action="demo-scale">도레미 듣기</button>
           </div>
         </div>
-        <div class="keyboard" aria-label="C4부터 B5까지 피아노 건반">
-          <div class="white-layer">${whiteKeys}</div>
-          <div class="black-layer">${blackKeys}</div>
+        <div class="keyboard" aria-label="C4부터 B5까지 피아노 건반" data-keyboard-version="${APP_VERSION}">
+          <div class="keyboard-inner">${whiteKeys}${blackKeys}</div>
         </div>
       </section>
     `;
@@ -367,7 +375,7 @@
     const reveal = state.showTargetHint && targetPitch && key.pitchClass === targetPitch;
     const pressed = state.lastPressedMidi === key.midi;
     return `
-      <button class="piano-key ${color} ${reveal ? 'target' : ''} ${pressed ? 'pressed' : ''}" style="${style}" data-action="key" data-midi="${key.midi}" aria-label="${key.label} ${key.note}">
+      <button type="button" class="piano-key ${color} ${reveal ? 'target' : ''} ${pressed ? 'pressed' : ''}" style="${style}" data-action="key" data-midi="${key.midi}" aria-label="${key.label} ${key.note}">
         <span class="kr">${key.label}</span>
         <span class="en">${key.note}</span>
       </button>
@@ -426,18 +434,76 @@
   }
 
   function handlePointerDown(event) {
-    const keyButton = event.target.closest('.piano-key[data-action="key"]');
-    if (!keyButton) return;
+    const keyboard = event.target.closest('.keyboard');
+    if (!keyboard) return;
+
+    const midi = resolveKeyboardMidiFromPoint(event.clientX, event.clientY, keyboard);
+    if (!midi) return;
+
     event.preventDefault();
     lastPointerKeyAt = Date.now();
-    if (keyButton.setPointerCapture && event.pointerId !== undefined) {
-      try {
-        keyButton.setPointerCapture(event.pointerId);
-      } catch (error) {
-        // Some browsers do not allow pointer capture after a re-render. Tapping still works.
+    handleKeyPress(midi, 'screen');
+  }
+
+  function handleTouchStart(event) {
+    // Fallback for older mobile browsers. Modern browsers use pointerdown above.
+    if (Date.now() - lastPointerKeyAt < 120) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    const target = document.elementFromPoint(touch.clientX, touch.clientY) || event.target;
+    const keyboard = target.closest ? target.closest('.keyboard') : null;
+    if (!keyboard) return;
+
+    const midi = resolveKeyboardMidiFromPoint(touch.clientX, touch.clientY, keyboard);
+    if (!midi) return;
+
+    event.preventDefault();
+    lastPointerKeyAt = Date.now();
+    handleKeyPress(midi, 'screen');
+  }
+
+  function handleMouseDown(event) {
+    // Fallback for browsers without PointerEvent. Avoid double-running after pointerdown.
+    if (Date.now() - lastPointerKeyAt < 120) return;
+    const keyboard = event.target.closest('.keyboard');
+    if (!keyboard) return;
+
+    const midi = resolveKeyboardMidiFromPoint(event.clientX, event.clientY, keyboard);
+    if (!midi) return;
+
+    event.preventDefault();
+    lastPointerKeyAt = Date.now();
+    handleKeyPress(midi, 'screen');
+  }
+
+  function resolveKeyboardMidiFromPoint(clientX, clientY, keyboard) {
+    if (!keyboard) return null;
+    const inner = keyboard.querySelector('.keyboard-inner') || keyboard;
+    const rect = inner.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) return null;
+
+    const whites = C.KEYBOARD.filter(key => !key.isBlack);
+    const blacks = C.KEYBOARD.filter(key => key.isBlack);
+    const whiteWidth = rect.width / whites.length;
+    const blackWidth = whiteWidth * 0.62;
+    const blackHeight = rect.height * 0.62;
+
+    // 1) 검은 건반 영역을 먼저 검사한다. 검은 건반 사이의 빈 공간은 흰 건반으로 내려간다.
+    if (y <= blackHeight) {
+      for (const black of blacks) {
+        const previousWhites = whites.filter(white => white.midi < black.midi).length;
+        const left = previousWhites * whiteWidth - blackWidth / 2;
+        const right = left + blackWidth;
+        if (x >= left && x <= right) return black.midi;
       }
     }
-    handleKeyPress(Number(keyButton.dataset.midi), 'screen');
+
+    // 2) 그 외 모든 위치는 흰 건반으로 판정한다.
+    const whiteIndex = Math.max(0, Math.min(whites.length - 1, Math.floor(x / whiteWidth)));
+    return whites[whiteIndex]?.midi || null;
   }
 
   function handleClick(event) {
