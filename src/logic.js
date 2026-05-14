@@ -1,4 +1,4 @@
-/* 피아노 탐험대 - 순수 로직. Browser + Node compatible. */
+/* Piano Quest / 피아노 탐험대 - pure logic. Browser + Node compatible. */
 (function (global) {
   'use strict';
 
@@ -9,14 +9,36 @@
     '파': 'F', '파#': 'F#', '솔': 'G', '솔#': 'G#', '라': 'A', '라#': 'A#', '시': 'B'
   };
   const PITCH_TO_KR = Object.fromEntries(Object.entries(KR_TO_PITCH).map(([kr, pitch]) => [pitch, kr]));
-  const CONCEPT_LABELS = {
-    note_position: '건반 위치',
-    black_key_group: '검은 건반 묶음',
-    staff_note: '오선지-건반 연결',
-    rhythm: '리듬 읽기',
-    ear: '듣고 찾기',
-    quiz: '이론 퀴즈'
+  const PITCH_TO_EN = {
+    C: 'C', 'C#': 'C#', D: 'D', 'D#': 'D#', E: 'E', F: 'F',
+    'F#': 'F#', G: 'G', 'G#': 'G#', A: 'A', 'A#': 'A#', B: 'B'
   };
+
+  const CONCEPT_LABELS_BY_LANG = {
+    ko: {
+      note_position: '건반 위치',
+      black_key_group: '검은 건반 묶음',
+      staff_note: '오선지-건반 연결',
+      rhythm: '리듬 읽기',
+      ear: '듣고 찾기',
+      quiz: '이론 퀴즈',
+      general: '기초 개념'
+    },
+    en: {
+      note_position: 'Key positions',
+      black_key_group: 'Black-key groups',
+      staff_note: 'Staff-to-key connection',
+      rhythm: 'Rhythm reading',
+      ear: 'Ear matching',
+      quiz: 'Theory quiz',
+      general: 'Basics'
+    }
+  };
+  const CONCEPT_LABELS = CONCEPT_LABELS_BY_LANG.ko;
+
+  function cleanLang(lang) {
+    return lang === 'en' ? 'en' : 'ko';
+  }
 
   function normalizePitchClass(noteOrPitch) {
     if (noteOrPitch === null || noteOrPitch === undefined) return '';
@@ -78,29 +100,58 @@
     return PITCH_TO_KR[pitch] || String(noteOrPitch || '');
   }
 
-  function prettyNote(noteOrPitch) {
+  function englishNoteName(noteOrPitch) {
     const pitch = normalizePitchClass(noteOrPitch);
-    const octaveMatch = String(noteOrPitch || '').match(/(-?\d)$/);
-    return `${PITCH_TO_KR[pitch] || noteOrPitch}${octaveMatch ? octaveMatch[1] : ''}`;
+    return PITCH_TO_EN[pitch] || String(noteOrPitch || '');
   }
 
-  function noteGroupHint(noteOrPitch) {
+  function noteName(noteOrPitch, lang = 'ko') {
+    return cleanLang(lang) === 'en' ? englishNoteName(noteOrPitch) : koreanNoteName(noteOrPitch);
+  }
+
+  function prettyNote(noteOrPitch, lang = 'ko') {
+    const pitch = normalizePitchClass(noteOrPitch);
+    const octaveMatch = String(noteOrPitch || '').match(/(-?\d)$/);
+    const name = noteName(pitch || noteOrPitch, lang);
+    return `${name}${octaveMatch ? octaveMatch[1] : ''}`;
+  }
+
+  function noteGroupHint(noteOrPitch, lang = 'ko') {
     const pitch = normalizePitchClass(noteOrPitch);
     const hints = {
-      C: '도는 검은 건반 2개 묶음의 바로 왼쪽 흰 건반이에요.',
-      D: '레는 검은 건반 2개 묶음 사이에 있어요.',
-      E: '미는 검은 건반 2개 묶음의 바로 오른쪽 흰 건반이에요.',
-      F: '파는 검은 건반 3개 묶음의 바로 왼쪽 흰 건반이에요.',
-      G: '솔은 검은 건반 3개 묶음에서 첫 번째와 두 번째 검은 건반 사이 아래예요.',
-      A: '라는 검은 건반 3개 묶음에서 두 번째와 세 번째 검은 건반 사이 아래예요.',
-      B: '시는 검은 건반 3개 묶음의 바로 오른쪽 흰 건반이에요.',
-      'C#': '도#은 도 바로 오른쪽의 검은 건반이에요.',
-      'D#': '레#은 레 바로 오른쪽의 검은 건반이에요.',
-      'F#': '파#은 파 바로 오른쪽의 검은 건반이에요.',
-      'G#': '솔#은 솔 바로 오른쪽의 검은 건반이에요.',
-      'A#': '라#은 라 바로 오른쪽의 검은 건반이에요.'
+      ko: {
+        C: '도는 검은 건반 2개 묶음의 바로 왼쪽 흰 건반이에요.',
+        D: '레는 검은 건반 2개 묶음 사이에 있어요.',
+        E: '미는 검은 건반 2개 묶음의 바로 오른쪽 흰 건반이에요.',
+        F: '파는 검은 건반 3개 묶음의 바로 왼쪽 흰 건반이에요.',
+        G: '솔은 검은 건반 3개 묶음에서 첫 번째와 두 번째 검은 건반 사이 아래예요.',
+        A: '라는 검은 건반 3개 묶음에서 두 번째와 세 번째 검은 건반 사이 아래예요.',
+        B: '시는 검은 건반 3개 묶음의 바로 오른쪽 흰 건반이에요.',
+        'C#': '도#은 도 바로 오른쪽의 검은 건반이에요.',
+        'D#': '레#은 레 바로 오른쪽의 검은 건반이에요.',
+        'F#': '파#은 파 바로 오른쪽의 검은 건반이에요.',
+        'G#': '솔#은 솔 바로 오른쪽의 검은 건반이에요.',
+        'A#': '라#은 라 바로 오른쪽의 검은 건반이에요.'
+      },
+      en: {
+        C: 'C is the white key just to the left of a group of two black keys.',
+        D: 'D is the white key between the two black keys.',
+        E: 'E is the white key just to the right of a group of two black keys.',
+        F: 'F is the white key just to the left of a group of three black keys.',
+        G: 'G sits under the space between the first and second black keys in a group of three.',
+        A: 'A sits under the space between the second and third black keys in a group of three.',
+        B: 'B is the white key just to the right of a group of three black keys.',
+        'C#': 'C# is the black key just to the right of C.',
+        'D#': 'D# is the black key just to the right of D.',
+        'F#': 'F# is the black key just to the right of F.',
+        'G#': 'G# is the black key just to the right of G.',
+        'A#': 'A# is the black key just to the right of A.'
+      }
     };
-    return hints[pitch] || '검은 건반 묶음을 먼저 보면 훨씬 쉬워요.';
+    const language = cleanLang(lang);
+    return hints[language][pitch] || (language === 'en'
+      ? 'Look for the black-key groups first. They make the pattern easier.'
+      : '검은 건반 묶음을 먼저 보면 훨씬 쉬워요.');
   }
 
   function isBlackPitch(pitchClass) {
@@ -118,6 +169,7 @@
         pitchClass,
         octave: octaveFromMidi(midi),
         label: koreanNoteName(pitchClass),
+        enLabel: englishNoteName(pitchClass),
         isBlack: isBlackPitch(pitchClass)
       });
     }
@@ -127,6 +179,10 @@
   function isCorrectAnswer(mission, answer) {
     if (!mission) return false;
     if (mission.type === 'quiz') {
+      if (Number.isInteger(mission.correctOptionIndex)) {
+        const selectedIndex = typeof answer === 'object' && answer ? Number(answer.index) : Number(answer);
+        return selectedIndex === mission.correctOptionIndex;
+      }
       const selected = typeof answer === 'object' && answer ? answer.value : answer;
       return String(selected) === String(mission.correctAnswer);
     }
@@ -167,10 +223,15 @@
     return total === 0 ? null : Math.round(((record.correct || 0) / total) * 100);
   }
 
-  function summarizeConcepts(stats) {
+  function conceptLabel(concept, lang = 'ko') {
+    const language = cleanLang(lang);
+    return CONCEPT_LABELS_BY_LANG[language][concept] || CONCEPT_LABELS_BY_LANG.ko[concept] || concept;
+  }
+
+  function summarizeConcepts(stats, lang = 'ko') {
     return Object.entries(stats || {}).map(([concept, record]) => ({
       concept,
-      label: CONCEPT_LABELS[concept] || concept,
+      label: conceptLabel(concept, lang),
       correct: record.correct || 0,
       wrong: record.wrong || 0,
       attempts: (record.correct || 0) + (record.wrong || 0),
@@ -182,37 +243,71 @@
     });
   }
 
-  function nextReviewConcept(stats) {
-    const candidates = summarizeConcepts(stats).filter(item => item.attempts > 0);
-    if (!candidates.length) return { concept: 'note_position', label: CONCEPT_LABELS.note_position, accuracy: null, attempts: 0 };
+  function nextReviewConcept(stats, lang = 'ko') {
+    const candidates = summarizeConcepts(stats, lang).filter(item => item.attempts > 0);
+    if (!candidates.length) return { concept: 'note_position', label: conceptLabel('note_position', lang), accuracy: null, attempts: 0 };
     return candidates[0];
   }
 
-  function makeStudentSummary(stats, studentName = '학생') {
-    const review = nextReviewConcept(stats);
+  function makeStudentSummary(stats, studentName = '학생', lang = 'ko') {
+    const language = cleanLang(lang);
+    const name = studentName || (language === 'en' ? 'Student' : '학생');
+    const review = nextReviewConcept(stats, language);
+    if (language === 'en') {
+      if (review.accuracy === null) {
+        return `${name} does not have much practice data yet. Start with finding C and the two-black-key groups today.`;
+      }
+      if (review.accuracy >= 85) {
+        return `${name} is doing well overall. Next, mix in more staff-reading and ear-matching missions.`;
+      }
+      return `${name}'s accuracy for ${review.label} is ${review.accuracy}%. For the next homework, repeat this concept for 3 minutes.`;
+    }
     if (review.accuracy === null) {
-      return `${studentName}은 아직 기록이 적어요. 오늘은 도 찾기와 검은 건반 2개 묶음부터 시작하면 좋아요.`;
+      return `${name}은 아직 기록이 적어요. 오늘은 도 찾기와 검은 건반 2개 묶음부터 시작하면 좋아요.`;
     }
     if (review.accuracy >= 85) {
-      return `${studentName}은 전반적으로 잘하고 있어요. 다음에는 오선지와 듣기 미션을 조금 더 섞어도 좋아요.`;
+      return `${name}은 전반적으로 잘하고 있어요. 다음에는 오선지와 듣기 미션을 조금 더 섞어도 좋아요.`;
     }
-    return `${studentName}은 ${review.label} 정확도가 ${review.accuracy}%예요. 다음 숙제는 이 개념을 3분만 반복해 주세요.`;
+    return `${name}은 ${review.label} 정확도가 ${review.accuracy}%예요. 다음 숙제는 이 개념을 3분만 반복해 주세요.`;
   }
 
-  function makeHomeworkText(stats, studentName = '학생') {
-    const review = nextReviewConcept(stats);
+  function makeHomeworkText(stats, studentName = '학생', lang = 'ko') {
+    const language = cleanLang(lang);
+    const name = studentName || (language === 'en' ? 'Student' : '학생');
+    const review = nextReviewConcept(stats, language);
+    if (language === 'en') {
+      if (review.accuracy === null) {
+        return `${name}'s homework: play the “Find C” mission in Piano Quest for 3 minutes a day. First look for the left side of two black keys.`;
+      }
+      return `${name}'s homework: practice the “${review.label}” missions in Piano Quest for 3 minutes a day. It is okay to miss; use the hint and try again.`;
+    }
     if (review.accuracy === null) {
-      return `${studentName} 숙제: 피아노 탐험대에서 '도 찾기' 미션을 하루 3분 해오기. 두 검은 건반 왼쪽을 먼저 찾아보세요.`;
+      return `${name} 숙제: 피아노 탐험대에서 '도 찾기' 미션을 하루 3분 해오기. 두 검은 건반 왼쪽을 먼저 찾아보세요.`;
     }
-    return `${studentName} 숙제: 피아노 탐험대에서 '${review.label}' 미션을 하루 3분 해오기. 틀려도 괜찮으니 힌트를 보고 다시 시도하세요.`;
+    return `${name} 숙제: 피아노 탐험대에서 '${review.label}' 미션을 하루 3분 해오기. 틀려도 괜찮으니 힌트를 보고 다시 시도하세요.`;
   }
 
-  function createReport(state) {
-    const name = state?.profile?.studentName || '학생';
-    const concepts = summarizeConcepts(state?.conceptStats || {});
+  function createReport(state, lang = 'ko') {
+    const language = cleanLang(lang);
+    const name = state?.profile?.studentName || (language === 'en' ? 'Student' : '학생');
+    const concepts = summarizeConcepts(state?.conceptStats || {}, language);
     const conceptText = concepts.length
       ? concepts.map(item => `- ${item.label}: ${item.accuracy}% (${item.correct}/${item.attempts})`).join('\n')
-      : '- 아직 풀이 기록 없음';
+      : (language === 'en' ? '- No practice records yet' : '- 아직 풀이 기록 없음');
+    if (language === 'en') {
+      return [
+        `Piano Quest Learning Report - ${name}`,
+        `XP: ${state?.xp || 0}`,
+        `Streak: ${state?.streak || 0}`,
+        `Completed missions: ${Object.keys(state?.completedMissions || {}).length}`,
+        '',
+        'Concept records',
+        conceptText,
+        '',
+        makeStudentSummary(state?.conceptStats || {}, name, language),
+        makeHomeworkText(state?.conceptStats || {}, name, language)
+      ].join('\n');
+    }
     return [
       `피아노 탐험대 학습 리포트 - ${name}`,
       `XP: ${state?.xp || 0}`,
@@ -222,8 +317,8 @@
       '개념별 기록',
       conceptText,
       '',
-      makeStudentSummary(state?.conceptStats || {}, name),
-      makeHomeworkText(state?.conceptStats || {}, name)
+      makeStudentSummary(state?.conceptStats || {}, name, language),
+      makeHomeworkText(state?.conceptStats || {}, name, language)
     ].join('\n');
   }
 
@@ -231,7 +326,9 @@
     PITCH_CLASSES,
     KR_TO_PITCH,
     PITCH_TO_KR,
+    PITCH_TO_EN,
     CONCEPT_LABELS,
+    CONCEPT_LABELS_BY_LANG,
     normalizePitchClass,
     pitchClassFromMidi,
     octaveFromMidi,
@@ -239,6 +336,8 @@
     noteToMidi,
     frequencyFromMidi,
     koreanNoteName,
+    englishNoteName,
+    noteName,
     prettyNote,
     noteGroupHint,
     isBlackPitch,
@@ -247,6 +346,7 @@
     calculateReward,
     updateConceptStats,
     conceptAccuracy,
+    conceptLabel,
     summarizeConcepts,
     nextReviewConcept,
     makeStudentSummary,

@@ -52,4 +52,19 @@ test('updates reward and concept stats', () => {
   assert.equal(L.conceptAccuracy(stats2.rhythm), 50);
 });
 
+
+test('supports English labels and reports', () => {
+  assert.equal(L.noteName('G#4', 'en'), 'G#');
+  assert.match(L.noteGroupHint('C', 'en'), /two black keys/);
+  assert.equal(L.conceptLabel('rhythm', 'en'), 'Rhythm reading');
+  const summary = L.makeStudentSummary({}, 'Mina', 'en');
+  assert.match(summary, /Mina/);
+});
+
+test('checks bilingual quiz missions by option index', () => {
+  const mission = { type: 'quiz', correctOptionIndex: 1 };
+  assert.equal(L.isCorrectAnswer(mission, { index: 1, value: 'Two beats' }), true);
+  assert.equal(L.isCorrectAnswer(mission, { index: 0, value: 'One beat' }), false);
+});
+
 console.log('All tests passed');

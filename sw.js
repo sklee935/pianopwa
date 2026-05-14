@@ -1,12 +1,12 @@
-const CACHE_NAME = 'pianopwa-free-v1.0.4-white-key-real-fix';
+const CACHE_NAME = 'pianopwa-free-v1.1.0-bilingual';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=white-key-real-fix-4',
+  './style.css?v=bilingual-1',
   './manifest.webmanifest',
-  './src/logic.js?v=white-key-real-fix-4',
-  './src/content.js?v=white-key-real-fix-4',
-  './src/app.js?v=white-key-real-fix-4',
+  './src/logic.js?v=bilingual-1',
+  './src/content.js?v=bilingual-1',
+  './src/app.js?v=bilingual-1',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png'

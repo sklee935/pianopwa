@@ -112,6 +112,32 @@ h1, h2, h3, p {
   gap: 8px;
 }
 
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 18px rgba(88, 70, 130, 0.08);
+}
+
+.language-toggle button {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 0.84rem;
+}
+
+.language-toggle button.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), #8e7cff);
+  box-shadow: 0 8px 14px rgba(109, 93, 252, 0.2);
+}
+
 .pill, .badge {
   display: inline-flex;
   align-items: center;

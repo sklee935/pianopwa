@@ -1,7 +1,7 @@
 {
-  "name": "피아노 탐험대 - 무료 PWA",
-  "short_name": "피아노탐험",
-  "description": "아이들이 피아노 이론을 게임처럼 배우는 무료 유지형 PWA",
+  "name": "피아노 탐험대 / Piano Quest",
+  "short_name": "Piano Quest",
+  "description": "아이들이 피아노 이론을 게임처럼 배우는 무료 한영 PWA / A free bilingual piano theory PWA for kids",
   "id": "./",
   "start_url": "./",
   "scope": "./",

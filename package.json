@@ -1,12 +1,19 @@
 {
   "name": "pianopwa",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "피아노 이론을 게임처럼 배우는 무료 유지형 PWA",
+  "description": "무료 한영 피아노 이론 PWA / Free bilingual piano theory PWA",
   "scripts": {
     "test": "node tests/logic.test.cjs",
     "serve": "python3 -m http.server 8080"
   },
-  "keywords": ["piano", "music-theory", "pwa", "kids", "education"],
+  "keywords": [
+    "piano",
+    "music-theory",
+    "pwa",
+    "kids",
+    "education",
+    "bilingual"
+  ],
   "license": "UNLICENSED"
 }
